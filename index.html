@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Numérique | Rayane HANEL</title>
+    
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <style>
+        /* --- DESIGN SYSTEM & VARIABLES --- */
+        :root {
+            --sidebar-width: 280px;
+            --accent: #1abc9c;     /* Turquoise/Menthe - Fixe */
+            
+            /* Couleurs Mode Clair */
+            --sidebar-bg: rgba(44, 62, 80, 0.85); /* Translucide pour le verre dépoli */
+            --sidebar-text: #ffffff;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --heading-color: #2c3e50;
+            --text: #34495e;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --border-color: #ddd;
+            --badge-bg: #f8f9fa;
+            --highlight-bg: #e8f8f5;
+        }
+
+        /* Couleurs Mode Sombre */
+        [data-theme="dark"] {
+            --sidebar-bg: rgba(17, 24, 39, 0.85); /* Translucide foncé */
+            --sidebar-text: #f3f4f6;
+            --bg-color: #1f2937; 
+            --card-bg: #374151; 
+            --heading-color: #f3f4f6; 
+            --text: #d1d5db; 
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            --border-color: #4b5563;
+            --badge-bg: #4b5563;
+            --highlight-bg: #1f2937;
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* --- BARRE DE PROGRESSION DE LECTURE --- */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background: var(--accent);
+            z-index: 10001;
+            transition: width 0.1s ease-out;
+        }
+
+        /* --- BARRE LATÉRALE (NAVIGATION + GLASSMORPHISM) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            backdrop-filter: blur(12px); /* Effet Verre Dépoli */
+            -webkit-backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 30px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .theme-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--sidebar-text);
+            padding: 8px;
+            border-radius: 5px;
+            width: 100%;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            background-color: #ddd; 
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 4px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('photo_profil.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .sidebar h1 { font-size: 1.4em; text-align: center; margin: 10px 0 5px; }
+        .sidebar h2 { font-size: 0.9em; text-align: center; font-weight: 300; opacity: 0.8; margin-bottom: 20px; }
+
+        .btn-cv {
+            display: block;
+            text-align: center;
+            background-color: var(--accent);
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-cv:hover { background-color: #16a085; transform: translateY(-2px); color: #ffffff; }
+
+        .nav-links { list-style: none; padding: 0; }
+        .nav-links li { margin-bottom: 8px; }
+        .nav-links a {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover { background-color: rgba(255,255,255,0.1); border-left: 3px solid var(--accent); }
+        .nav-links a.active {
+            background-color: rgba(255,255,255,0.15);
+            border-left: 3px solid var(--accent);
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .contact-mini { margin-top: auto; font-size: 0.85em; opacity: 0.8; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        /* --- CONTENU PRINCIPAL --- */
+        .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 40px 60px; }
+        section { margin-bottom: 80px; scroll-margin-top: 40px; }
+        
+        h2.section-title {
+            color: var(--heading-color); font-size: 1.8em; border-bottom: 3px solid var(--accent);
+            display: inline-block; margin-bottom: 30px; padding-bottom: 5px;
+        }
+
+        .card { background: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 25px; }
+        
+        /* EFFET TYPING */
+        .typing-text::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            color: var(--accent);
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Logos */
+        .logos-container { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+        
+        /* Compteurs */
+        .counters-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 10px; }
+        .counter-card { flex: 1; min-width: 160px; background: var(--badge-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px 15px; text-align: center; transition: transform 0.3s, box-shadow 0.3s; }
+        .counter-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: var(--accent); }
+        .counter-icon { font-size: 2.5em; margin-bottom: 10px; display: block; }
+        .counter-number { font-size: 2.8em; font-weight: 900; color: var(--accent); margin-bottom: 5px; line-height: 1; }
+        .counter-text { font-size: 0.95em; font-weight: bold; color: var(--heading-color); }
+
+        .ppp-highlight { background-color: var(--highlight-bg); border-left: 5px solid var(--accent); padding: 20px; margin: 20px 0; font-style: italic; color: var(--text); }
+        .badge-tag { background: var(--badge-bg); padding: 8px 15px; border-radius: 4px; color: var(--heading-color); font-weight: 500; border: 1px solid var(--border-color); }
+
+        /* BARRES DE COMPÉTENCES ANIMÉES */
+        .skills-wrapper { margin-top: 25px; display: flex; flex-direction: column; gap: 15px; }
+        .skill-item { width: 100%; max-width: 500px; }
+        .skill-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; color: var(--heading-color); }
+        .skill-label span:last-child { color: var(--accent); }
+        .skill-bar-bg { width: 100%; height: 10px; background-color: var(--border-color); border-radius: 5px; overflow: hidden; }
+        .skill-bar-fill { height: 100%; background-color: var(--accent); border-radius: 5px; width: 0%; transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+
+        .tools-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .tool-badge { background-color: var(--badge-bg); border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 1.05em; color: var(--heading-color); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+        .tool-badge:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-3px); }
+
+        /* --- COMPÉTENCES TECHNIQUES --- */
+        .skill-header { display: flex; justify-content: space-between; align-items: center; background: var(--sidebar-bg); color: #ffffff; padding: 15px 25px; border-radius: 8px 8px 0 0; flex-wrap: wrap; gap: 10px; }
+        .skill-title { font-size: 1.1em; font-weight: bold; }
+        .skill-body { border: 1px solid var(--border-color); border-top: none; padding: 25px; border-radius: 0 0 8px 8px; background: var(--card-bg); box-shadow: var(--card-shadow); }
+        .tag { background: var(--accent); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
+
+        .scientific-proof { display: flex; gap: 30px; margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-color); flex-wrap: wrap; }
+        .proof-text { flex: 2; min-width: 300px; }
+        .proof-visual { flex: 1; min-width: 280px; }
+
+        /* EFFET ZOOM IMAGES (LIGHTBOX) */
+        .zoomable { cursor: zoom-in; transition: transform 0.3s, box-shadow 0.3s; }
+        .zoomable:hover { transform: scale(1.03); box-shadow: 0 8px 15px rgba(0,0,0,0.15); }
+        
+        .lightbox { position: fixed; z-index: 99999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+        .lightbox.active { opacity: 1; pointer-events: auto; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transform: scale(0.8); transition: transform 0.3s ease; }
+        .lightbox.active img { transform: scale(1); }
+        .lightbox-close { position: absolute; top: 20px; right: 40px; color: white; font-size: 50px; font-weight: bold; user-select: none; cursor: pointer; }
+
+        .btn-pdf { display: inline-flex; align-items: center; gap: 8px; background-color: var(--accent); color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: bold; margin-top: 15px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s, transform 0.2s; }
+        .btn-pdf:hover { background-color: #16a085; transform: translateY(-2px); color: #ffffff;}
+
+        .timeline-item { position: relative; padding-left: 35px; margin-bottom: 25px; border-left: 3px solid var(--border-color); }
+        .timeline-item::before { content: ''; position: absolute; left: -9px; top: 0; width: 15px; height: 15px; background: var(--accent); border-radius: 50%; border: 3px solid var(--card-bg); }
+        .timeline-date { font-weight: bold; color: var(--accent); display: block; margin-bottom: 5px; font-size: 0.9em; }
+        .timeline-title { font-weight: bold; color: var(--heading-color); font-size: 1.1em; display: block; }
+
+        /* BOUTON RETOUR EN HAUT */
+        #back-to-top {
+            position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; z-index: 1000; display: flex; align-items: center; justify-content: center;
+        }
+        #back-to-top.visible { opacity: 1; pointer-events: auto; }
+        #back-to-top:hover { transform: translateY(-5px); background: #16a085; }
+
+        /* ANIMATIONS FADE-IN */
+        .fade-in { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* ASTUCE IMPRESSION */
+        .print-hint {
+            text-align: center;
+            background: var(--highlight-bg);
+            border: 1px dashed var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 40px 0 20px 0;
+            color: var(--text);
+            font-size: 1.05em;
+        }
+        .print-hint code {
+            background: var(--card-bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--accent);
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; padding: 20px; backdrop-filter: none; background-color: var(--sidebar-bg); }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .scientific-proof { flex-direction: column; }
+        }
+
+        /* --- MEDIA PRINT (IMPRESSION) --- */
+        @media print {
+            :root, [data-theme="dark"] {
+                --bg-color: #ffffff; --card-bg: #ffffff; --text: #000000; --heading-color: #000000; 
+                --sidebar-width: 0px; --card-shadow: none; --border-color: #ccc; --badge-bg: #f0f0f0;
+            }
+            .sidebar, #back-to-top, #theme-toggle, .btn-pdf, .btn-cv, #scroll-progress, .print-hint { display: none !important; }
+            .main-content { margin-left: 0; width: 100%; padding: 0; }
+            .card { border: 1px solid #ccc; break-inside: avoid; margin-bottom: 20px; box-shadow: none; }
+            section { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            .fade-in { opacity: 1 !important; transform: none !important; transition: none !important; } 
+            .skill-bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; width: 100% !important; } 
+            body { background-color: white; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="scroll-progress"></div>
+
+    <nav class="sidebar">
+        <button id="theme-toggle" class="theme-btn">🌙 Mode Sombre</button>
+
+        <img src="photocv.jpg" alt="Photo de Rayane HANEL" class="profile-pic" style="object-fit: cover; padding: 0;">
+        
+        <h1>Rayane HANEL</h1>
+        <h2>BUT Mesures Physiques</h2>
+
+        <a href="cv2026.pdf" target="_blank" class="btn-cv">📄 Télécharger mon CV</a>
+
+        <ul class="nav-links">
+            <li><a href="#accueil">🏠 Accueil</a></li>
+            <li><a href="#chiffres">📊 Le BUT en chiffres</a></li>
+            <li><a href="#profil">👤 Profil & Projet Pro</a></li>
+            <li><a href="#outils">⚙️ Outils & Équipements</a></li>
+            <li><a href="#parcours">🎓 Parcours & CV</a></li>
+            <li><a href="#c1">🧪 C1 - Mesures</a></li>
+            <li><a href="#c2">📏 C2 - Métrologie</a></li>
+            <li><a href="#c3">💻 C3 - Instrumentation</a></li>
+            <li><a href="#c4">🔬 C4 - Matériaux</a></li>
+            <li><a href="#c5">🌿 C5 - Environnement</a></li>
+        </ul>
+
+        <div class="contact-mini">
+            <p>📧 rayane.hanel@etudiant.univ-reims.fr</p>
+            <p>📞 07.66.17.73.10</p>
+            <p>📍 Vitry-le-François / Reims</p>
+        </div>
+    </nav>
+
+    <main class="main-content">
+
+        <section id="accueil" class="fade-in">
+            <div class="card">
+                <div class="logos-container">
+                    <img src="logourca.jpg" alt="Logo URCA" style="height: 60px; width: auto;">
+                    <img src="logoiut.png" alt="Logo IUT" style="height: 60px; width: auto;">
+                    <img src="mp.jpg" alt="Logo Mesures Physiques" style="height: 60px; width: auto;">
+                </div>
+                
+                <h1 style="color:var(--heading-color); font-size:2.5em; margin-bottom:5px; line-height:1.2;">PORTFOLIO DE COMPÉTENCES</h1>
+                
+                <p id="typewriter" class="typing-text" style="font-size:1.3em; color:var(--accent); font-weight:300; min-height: 1.5em; margin-top: 5px;"></p>
+                
+                <hr style="border:0; border-top:1px solid var(--border-color); margin:30px 0;">
+                
+                <p style="font-size:1.1em; line-height:1.8;">
+                    Bienvenue sur mon portfolio numérique. Ce site retrace mon parcours académique et professionnel, validant mes compétences de <strong>Technicien Supérieur</strong> à travers des exemples concrets issus de mes stages, de mon alternance et de mes travaux pratiques.
+                </p>
+            </div>
+        </section>
+
+        <section id="chiffres" class="fade-in">
+            <h2 class="section-title">La Pratique en Chiffres</h2>
+            <div class="counters-grid" id="counter-section">
+                <div class="counter-card">
+                    <span class="counter-icon">🎓</span>
+                    <div class="counter-number" data-target="300">0</div>
+                    <div class="counter-text">Heures de Théorie (CM)</div>
+                </div>
+                <div class="counter-card">
+                    <span class="counter-icon">🛠️</span>
+                    <div class="counter-number" data-target="1200">0</div>
+                    <div class="counter-text">Heures de Pratique (TD/TP)</div>
+                </div>
+                <div class="counter-card">
+                    <span class="counter-icon">🚀</span>
+                    <div class="counter-number" data-target="300">0</div>
+                    <div class="counter-text">Heures de Projets (SAÉ)</div>
+                </div>
+                <div class="counter-card">
+                    <span class="counter-icon">💼</span>
+                    <div class="counter-number" data-target="10">0</div>
+                    <div class="counter-text">Semaines de Stage</div>
+                </div>
+                <div class="counter-card">
+                    <span class="counter-icon">🏭</span>
+                    <div class="counter-number" data-target="1">0</div>
+                    <div class="counter-text">An d'Alternance</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="profil" class="fade-in">
+            <h2 class="section-title">Profil & Projet Professionnel</h2>
+            <div class="card">
+                <p><strong>Objectif :</strong> Devenir Ingénieur en Génie urbain, avec un intérêt marqué pour la gestion durable des réseaux et la réduction des nuisances environnementales en milieu urbain.</p>
+                
+                <div class="ppp-highlight">
+                    "Mon alternance chez <strong>Heidelberg Materials</strong> (Maintenance électrique) couplée à mon stage chez <strong>Eiffage Route</strong> (Technicien laboratoire) me permet de lier la rigueur de l'analyse physico-chimique aux contraintes techniques du terrain industriel."
+                </div>
+                
+                <h3 style="color:var(--heading-color);">Atouts & Savoir-être</h3>
+                <ul style="display:flex; gap:10px; list-style:none; padding:0; flex-wrap:wrap; margin-top:15px;">
+                    <li class="badge-tag">Autonomie</li>
+                    <li class="badge-tag">Rigueur Scientifique</li>
+                    <li class="badge-tag">Travail d'équipe</li>
+                    <li class="badge-tag">Anglais Technique</li>
+                </ul>
+
+                <h3 style="color:var(--heading-color); margin-top: 35px;">🦺 Habilitations & Sécurité</h3>
+                <ul style="display:flex; gap:10px; list-style:none; padding:0; flex-wrap:wrap; margin-top:15px;">
+                    <li class="badge-tag" style="border-color: var(--accent);">⚡ B0/BR/BE Manoeuvre - Habilitation Électrique</li>
+                </ul>
+
+                <h3 style="color:var(--heading-color); margin-top: 35px;">Langues & Certifications</h3>
+                <div class="skills-wrapper">
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Anglais</span> <span>B2</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="80%"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Allemand</span> <span>B1</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="50%"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span> Français (Projet Voltaire)</span> <span>Niveau Professionnel</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="85%"></div></div>
+                    </div>
+                </div>
+
+                <h3 style="color:var(--heading-color); margin-top: 45px;">🎯 Centres d'intérêt</h3>
+                <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:15px;">
+                    <div style="flex:1; min-width:200px; background:var(--badge-bg); padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                        <h4 style="margin:0 0 10px 0; color:var(--accent);">Sport d'équipe</h4>
+                        <p style="margin:0; font-size:0.9em; line-height:1.4;">Pratique du football en compétition. Développement de la résilience, de la communication et de l'esprit d'équipe.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="outils" class="fade-in">
+            <h2 class="section-title">Outils, Logiciels & Équipements</h2>
+            <div class="card">
+                <h3 style="color:var(--heading-color); margin-bottom:15px; font-size:1.2em;">💻 Informatique & Logiciels</h3>
+                <div class="tools-grid">
+                    <div class="tool-badge">📊 Excel / VBA</div>
+                    <div class="tool-badge">⚙️ SAP</div>
+                    <div class="tool-badge">🔌 LabVIEW</div>
+                    <div class="tool-badge">📈 Regressi</div>
+                    <div class="tool-badge">🐍 Python</div>
+                    <div class="tool-badge">📝 Suite Office</div>
+                </div>
+
+                <h3 style="color:var(--heading-color); margin-top:35px; margin-bottom:15px; font-size:1.2em;">🔬 Parc Machines Industriel</h3>
+                <div class="tools-grid">
+                    <div class="tool-badge">⚙️ Spectro UV-Vis</div>
+                    <div class="tool-badge">🧪 Chromatographe HPLC</div>
+                    <div class="tool-badge">🔥 Calorimètre</div>
+                    <div class="tool-badge">📡 Automates Programmables</div>
+                    <div class="tool-badge">⚡ Oscilloscope</div>
+                    <div class="tool-badge">🔬 Spectro Fluorescence X</div>
+                    <div class="tool-badge">🎛️ Capteurs Process (4-20mA)</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="parcours" class="fade-in">
+            <h2 class="section-title">Parcours & Expériences</h2>
+            <div class="card">
+                <h3 style="color:var(--heading-color); margin-bottom:20px;">Expériences Professionnelles</h3>
+                
+                <div class="timeline-item">
+                    <span class="timeline-date">Depuis Août 2025 (Alternance - 1 an)</span>
+                    <span class="timeline-title">Technicien de Maintenance Électrique - Heidelberg Materials</span>
+                    <p>Maintenance préventive, maintenance corrective, diagnostic de pannes, instrumentation industrielle, amélioration continue.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="timeline-date">Avril - Juin 2025 (Stage - 10 semaines)</span>
+                    <span class="timeline-title">Technicien de Laboratoire - Eiffage Route (La Neuvillette)</span>
+                    <p>Contrôle qualité des enrobés, réalisation d'essais normés, rédaction de comptes rendus de conformité.</p>
+                </div>
+
+                <h3 style="color:var(--heading-color); margin-top:40px; margin-bottom:20px;">Formation Académique</h3>
+                
+                <div class="timeline-item">
+                    <span class="timeline-date">2023 - 2026 (En cours)</span>
+                    <span class="timeline-title">BUT Mesures Physiques - IUT de Reims</span>
+                    <p>Spécialisation MAE (Mesures et Analyses Environnementales).</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2022 - 2023</span>
+                    <span class="timeline-title">CPGE MPSI</span>
+                    <p>Mathématiques, Physique, Sciences de l'Ingénieur. Acquisition d'une forte capacité de travail.</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2022</span>
+                    <span class="timeline-title">Baccalauréat Général (Mention Bien)</span>
+                    <p>Lycée François 1er. Spécialités : Mathématiques, Physique-Chimie.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="c1" class="fade-in">
+            <div class="skill-header">
+                <span class="skill-title">COMPÉTENCE 1 : Mener une campagne de mesures</span>
+                <span class="tag">Contrôle Qualité</span>
+            </div>
+            <div class="skill-body">
+                <p><em>Définition :</em> Élaborer un protocole, collecter des données fiables et analyser les résultats selon les normes en vigueur.</p>
+                <p><strong>Lien Projet Pro :</strong> C'est la base de mon travail de contrôle qualité chez Eiffage et de surveillance des process chez Heidelberg.</p>
+
+                <div class="scientific-proof">
+                    <div class="proof-text">
+                        <h4 style="color:var(--accent);">Preuve Académique : Analyse DCO (TP Qualité de l'eau)</h4>
+                        <p>Oxydation par dichromate à reflux selon la norme <em>NF T90-101</em>. Mesure d'une DCO de 84,3 mg/L, classant l'eau en "Mauvaise qualité".</p>
+                        
+                        <a href="tpdco.pdf" target="_blank" class="btn-pdf">📄 Voir le Rapport de TP</a>
+                        
+                        <h4 style="color:var(--heading-color); margin-top: 15px; border-left: 3px solid var(--accent); padding-left: 10px;">Mise en pratique : Eiffage Route</h4>
+                        <p>Cette rigueur d'application des protocoles normés s'est traduite directement lors de mon stage. J'ai mené des campagnes de mesures sur les enrobés (compacité, teneur en bitume). Savoir suivre une norme à la lettre (comme en chimie) m'a permis de rédiger des rapports de conformité fiables, garantissant que les matériaux livrés sur les chantiers respectaient le cahier des charges client.</p>
+                    </div>
+                    <div class="proof-visual">
+                        <img src="reflux.png" alt="Montage à reflux DCO" class="zoomable" style="width:100%; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="c2" class="fade-in">
+            <div class="skill-header">
+                <span class="skill-title">COMPÉTENCE 2 : Déployer la métrologie</span>
+                <span class="tag">Incertitudes & Normes</span>
+            </div>
+            <div class="skill-body">
+                <p><em>Définition :</em> Assurer la traçabilité des mesures, calculer les incertitudes et valider les instruments.</p>
+
+                <div class="scientific-proof">
+                    <div class="proof-text">
+                        <h4 style="color:var(--accent);">Preuve Académique : Validation méthode Chrome VI</h4>
+                        <p>Comparaison métrologique SAA vs Spectro UV-Visible. Calcul des Limites de Quantification (LQ = 6,06 µg/L en UV) pour le dosage de traces environnementales.</p>
+                        
+                        <a href="tpchrome.pdf" target="_blank" class="btn-pdf">📄 Voir le Rapport de TP</a>
+
+                        <h4 style="color:var(--heading-color); margin-top: 15px; border-left: 3px solid var(--accent); padding-left: 10px;">Mise en pratique : Heidelberg Materials</h4>
+                        <p>La métrologie est cruciale en maintenance industrielle. J'applique cette compétence pour vérifier et étalonner les capteurs critiques (pression, température) sur les fours de la cimenterie. L'évaluation des incertitudes vue en IUT me permet d'identifier les dérives des capteurs et de les recalibrer avant qu'ils ne faussent les paramètres de production ou les bilans d'émissions.</p>
+                    </div>
+                    <div class="proof-visual">
+                        <img src="etalonnage.png" alt="Courbe d'étalonnage" class="zoomable" style="width:100%; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="c3" class="fade-in">
+            <div class="skill-header">
+                <span class="skill-title">COMPÉTENCE 3 : Chaîne de mesure</span>
+                <span class="tag">Instrumentation</span>
+            </div>
+            <div class="skill-body">
+                <p><em>Définition :</em> Mettre en œuvre une chaîne d'instrumentation complexe (capteur, conditionneur, traitement).</p>
+
+                <div class="scientific-proof">
+                    <div class="proof-text">
+                        <h4 style="color:var(--accent);">Preuve Académique : Optimisation HPLC</h4>
+                        <p>Réduction de l'incertitude d'un facteur 7 (± 0,023 g/L) lors d'une analyse de phtalates par l'intégration d'un étalon interne pour corriger les dérives de l'appareil.</p>
+                        
+                        <a href="tphplc.pdf" target="_blank" class="btn-pdf">📄 Voir le Rapport de TP</a>
+
+                        <h4 style="color:var(--heading-color); margin-top: 15px; border-left: 3px solid var(--accent); padding-left: 10px;">Mise en pratique : Heidelberg Materials</h4>
+                        <p>Cette maîtrise de la chaîne d'acquisition est le cœur de mon alternance. Au quotidien, je dépanne des boucles de régulation (4-20 mA). La logique de diagnostic vue à l'IUT (isoler le capteur, vérifier le conditionneur, lire l'automate) me permet de cibler rapidement l'origine d'une panne sur les transmetteurs de niveau des silos ou les analyseurs de gaz du four.</p>
+                    </div>
+                    <div class="proof-visual">
+                        <img src="hplc.png" alt="Chromatogramme HPLC" class="zoomable" style="width:100%; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="c4" class="fade-in">
+            <div class="skill-header">
+                <span class="skill-title">COMPÉTENCE 4 : Caractérisation Physico-Chimique</span>
+                <span class="tag">Matériaux</span>
+            </div>
+            <div class="skill-body">
+                <p><em>Définition :</em> Caractériser les propriétés d'un matériau par des méthodes complexes (Spectro, RX, Méca).</p>
+
+                <div class="scientific-proof">
+                    <div class="proof-text">
+                        <h4 style="color:var(--accent);">Preuve Académique : Identification Multi-Technique</h4>
+                        <p>Croisement de techniques (XRF, Spectro IR, Essais mécaniques) pour identifier formellement des matériaux inconnus (Inox 430, Polycarbonate).</p>
+                        
+                        <a href="tpmat.pdf" target="_blank" class="btn-pdf">📄 Voir le Rapport de TP</a>
+
+                        <h4 style="color:var(--heading-color); margin-top: 15px; border-left: 3px solid var(--accent); padding-left: 10px;">Mise en pratique : Eiffage Route</h4>
+                        <p>Lors de mon stage, j'ai adapté cette démarche multi-critères aux matériaux de construction. J'ai réalisé des analyses granulométriques et des essais de résistance mécanique sur les graves bitumes. Les concepts de comportement des matériaux vus en classe m'ont permis de mieux comprendre pourquoi une formulation d'enrobé risquait l'orniérage et comment l'ajuster.</p>
+                    </div>
+                    <div class="proof-visual">
+                        <img src="infrarouge.png" alt="Spectre Infrarouge" class="zoomable" style="width:100%; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="c5" class="fade-in">
+            <div class="skill-header">
+                <span class="skill-title">COMPÉTENCE 5 : Démarche Environnementale</span>
+                <span class="tag">Énergie & Durable</span>
+            </div>
+            <div class="skill-body">
+                <p><em>Définition :</em> Définir un cahier des charges répondant à des contraintes environnementales ou énergétiques.</p>
+
+                <div class="scientific-proof">
+                    <div class="proof-text">
+                        <h4 style="color:var(--accent);">Preuve Académique : Bilan Thermique (Calorimétrie)</h4>
+                        <p>Étude d'une combustion mettant en évidence 60% de pertes thermiques dans l'environnement, prouvant la nécessité de l'isolation.</p>
+                        
+                        <a href="tpcalo.pdf" target="_blank" class="btn-pdf">📄 Voir le Rapport de TP</a>
+
+                        <h4 style="color:var(--heading-color); margin-top: 15px; border-left: 3px solid var(--accent); padding-left: 10px;">Mise en pratique : Heidelberg Materials</h4>
+                        <p>Ce résultat théorique prend tout son sens en cimenterie, une industrie très énergivore. Mon alternance m'amène à intervenir sur des projets d'efficacité énergétique, comme l'entretien des variateurs de vitesse des ventilateurs de tirage du four. Je fais directement le lien entre les pertes thermiques mesurées en TP et les actions de maintenance pour réduire l'empreinte carbone globale de l'usine.</p>
+                    </div>
+                    <div class="proof-visual">
+                        <img src="calorimètre.png" alt="Bilan thermique calorimètre" class="zoomable" style="width:100%; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="print-hint fade-in">
+            <p>🖨️ <strong>Astuce :</strong> Appuyez sur <code>Ctrl + P</code> (ou <code>Cmd + P</code> sur Mac) pour imprimer ou sauvegarder ce portfolio en version PDF optimisée.</p>
+        </div>
+
+    </main>
+
+    <button id="back-to-top" title="Retour en haut">⬆️</button>
+
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-img" src="" alt="Zoom Image">
+    </div>
+
+    <script>
+        // --- BARRE DE PROGRESSION ---
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scroll-progress').style.width = scrolled + '%';
+        });
+
+        // --- EFFET MACHINE À ÉCRIRE ---
+        const typeText = "BUT Mesures Physiques : parcours Mesures et Analyses Environnementales (MAE)";
+        const typeEl = document.getElementById('typewriter');
+        let typeIndex = 0;
+        function typeWriter() {
+            if (typeIndex < typeText.length) {
+                typeEl.innerHTML += typeText.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeWriter, 40);
+            } else {
+                setTimeout(() => { typeEl.classList.remove('typing-text'); }, 2000);
+            }
+        }
+        setTimeout(typeWriter, 500);
+
+        // --- MODE SOMBRE ---
+        const toggleBtn = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+
+        if (localStorage.getItem('theme') === 'dark') {
+            toggleBtn.innerHTML = '☀️ Mode Clair';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            if (root.getAttribute('data-theme') === 'dark') {
+                root.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                toggleBtn.innerHTML = '🌙 Mode Sombre';
+            } else {
+                root.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                toggleBtn.innerHTML = '☀️ Mode Clair';
+            }
+        });
+
+        // --- SCROLL DOUX ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // --- FADE-IN ANIMATIONS ---
+        const fadeElements = document.querySelectorAll(".fade-in");
+        const fadeObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        fadeElements.forEach(el => fadeObserver.observe(el));
+
+        // --- MENU DYNAMIQUE (SCROLLSPY) ---
+        const sections = document.querySelectorAll("section[id]");
+        const navLinks = document.querySelectorAll(".nav-links a");
+        const scrollSpyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    let currentId = entry.target.getAttribute("id");
+                    navLinks.forEach(link => {
+                        link.classList.remove("active");
+                        if(link.getAttribute("href") === `#${currentId}`) {
+                            link.classList.add("active");
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: "-20% 0px -60% 0px" });
+        sections.forEach(sec => scrollSpyObserver.observe(sec));
+
+        // --- ANIMATION BARRES DE COMPÉTENCES ---
+        const skillBars = document.querySelectorAll('.skill-bar-fill');
+        const skillObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const width = entry.target.getAttribute('data-width');
+                    entry.target.style.width = width;
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        skillBars.forEach(bar => skillObserver.observe(bar));
+
+        // --- COMPTEURS ANIMÉS ---
+        const counters = document.querySelectorAll('.counter-number');
+        let animated = false;
+        const animateCounters = () => {
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const count = parseInt(counter.innerText);
+                    const inc = Math.max(1, Math.ceil(target / 60));
+
+                    if (count < target) {
+                        counter.innerText = count + inc > target ? target : count + inc;
+                        setTimeout(updateCount, 25);
+                    } else {
+                        if(target > 50) { counter.innerText = target + "+"; } 
+                        else { counter.innerText = target; }
+                    }
+                };
+                updateCount();
+            });
+        };
+        const counterObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !animated) {
+                    animateCounters();
+                    animated = true;
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        const counterSection = document.getElementById('counter-section');
+        if (counterSection) { counterObserver.observe(counterSection); }
+
+        // --- ZOOM IMAGE (LIGHTBOX) ---
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.querySelector(".lightbox-img");
+        const closeBtn = document.querySelector(".lightbox-close");
+        const zoomables = document.querySelectorAll(".zoomable");
+
+        zoomables.forEach(img => {
+            img.addEventListener("click", () => {
+                lightboxImg.src = img.src;
+                lightbox.classList.add("active");
+            });
+        });
+
+        const closeLightbox = () => lightbox.classList.remove("active");
+        closeBtn.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", (e) => {
+            if(e.target === lightbox) closeLightbox();
+        });
+
+        // --- BOUTON RETOUR EN HAUT ---
+        const backToTopBtn = document.getElementById("back-to-top");
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 500) { backToTopBtn.classList.add("visible"); } 
+            else { backToTopBtn.classList.remove("visible"); }
+        });
+        backToTopBtn.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+    </script>
+</body>
+</html>
